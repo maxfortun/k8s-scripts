@@ -2,10 +2,13 @@
 
 pods=$(kubectl -n istio-system  get pod|grep istio-ingressgateway|awk '{print $1}')
 
+ROOT=.
 for pod in $pods; do
-	echo $pod
-	file=$pod.json
-   	rm -f $file
-	stdin $pod -- curl 0:15000/config_dump > $file
+	dir=$ROOT/$pod
+	[ ! -e $dir ] || rm -rf $dir
+	mkdir -p $dir
+	for type in listener all; do
+		istioctl -n istio-system pc $type $pod -o json > $dir/$type
+	done
 done
 
