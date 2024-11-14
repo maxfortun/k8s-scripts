@@ -1,13 +1,14 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 pods=$(kubectl -n istio-system  get pod|grep istio-ingressgateway|awk '{print $1}')
 
-ROOT=.
+ROOT=/tmp/$LOGNAME/${0%.*}.d
+[ ! -e $ROOT ] || rm -rf $ROOT
+
 for pod in $pods; do
 	dir=$ROOT/$pod
-	[ ! -e $dir ] || rm -rf $dir
 	mkdir -p $dir
-	for type in listener all; do
+	for type in all listener cluster; do
 		istioctl -n istio-system pc $type $pod -o json > $dir/$type
 	done
 done
